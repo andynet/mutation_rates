@@ -3,6 +3,36 @@
 import argparse
 
 
+def get_genotype(sample):
+
+    sample = sample.split(':')
+    genotype = sample[0]
+
+    return genotype
+
+
+def create_ped(description, records):
+
+    names = description.split()[9:]
+    variants = []
+
+    for i in range(len(names)):
+        variants.append([])
+
+    for record in records:
+        record = record.split()
+
+        chromosome = record[0]
+        position = record[1]
+
+        for i in range(len(names)):
+            genotype = get_genotype(record[9+i])
+            variants[i].append(genotype)
+
+    for i in range(len(names)):
+        print(names[i], variants[i])
+
+
 def read_vcf(file_name):
 
     description = None
@@ -26,6 +56,7 @@ def main():
     args = parser.parse_args()
 
     description, records = read_vcf(args.vcf)
+    create_ped(description, records)
 
 
 if __name__ == '__main__':
