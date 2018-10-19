@@ -1,9 +1,9 @@
 # Mutation rates
 
 ## Project structure
-* data/
-    * test/
 * scripts/
     * python/
+    * bash/
 * workflow.py
+* environment.yaml
 * README.md
