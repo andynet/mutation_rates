@@ -16,7 +16,7 @@ def translate(genotype):
     except ValueError:
         second_allel = 0
 
-    return f'{first_allel}/{second_allel}'
+    return '{}/{}'.format(first_allel, second_allel)
 
 
 def get_genotype(sample):
