@@ -3,6 +3,22 @@
 import argparse
 
 
+def translate(genotype):
+    first_allel, second_allel = genotype.split('/')
+
+    try:
+        first_allel = int(first_allel)+1
+    except ValueError:
+        first_allel = 0
+
+    try:
+        second_allel = int(second_allel)+1
+    except ValueError:
+        second_allel = 0
+
+    return f'{first_allel}/{second_allel}'
+
+
 def get_genotype(sample):
 
     sample = sample.split(':')
