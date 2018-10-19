@@ -22,7 +22,7 @@ def translate(genotype):
 def get_genotype(sample):
 
     sample = sample.split(':')
-    genotype = sample[0]
+    genotype = translate(sample[0])
 
     return genotype
 
