@@ -73,7 +73,7 @@ def create_files(cname2cnum, names, lines):
 def read_vcf(file_name):
 
     cname2cnum = dict()
-    cnum = 0
+    cnum = 1
 
     names = None
     lines = []
