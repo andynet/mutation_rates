@@ -1,6 +1,12 @@
-#!/usr/bin/python3
-
 import argparse
+import sys
+import os
+import json
+
+
+def save_lines(file, lines):
+    with open(file, 'w') as f:
+        f.writelines(lines)
 
 
 def translate(genotype):
@@ -27,93 +33,87 @@ def get_genotype(sample):
     return genotype
 
 
-def create_ped(description, records):
+def create_files(cname2cnum, names, lines):
 
-    result = []
+    ped = []
+    map = []
+    dat = []
 
-    names = description.split()[9:]
-    IDs = []
     variants = []
+    identifiers = []
 
     for i in range(len(names)):
         variants.append([])
 
-    for record in records:
-        record = record.split()
+    for line in lines:
+        record = line.split()
 
-        chromosome = record[0]
+        cname = record[0]
+        cnum = cname2cnum[cname]
         position = record[1]
+        identifiers.append(f'{cname}_{position}')
 
-        ID = f'{chromosome}_{position}'
-        IDs.append(ID)
+        map.append(f'{cnum}\t{identifiers[-1]}\t{int(position)/1000000}\n')
+        dat.append(f'M\t{identifiers[-1]}\n')
 
         for i in range(len(names)):
             genotype = get_genotype(record[9+i])
             variants[i].append(genotype)
 
-    IDs_str = '\t'.join(IDs)
-    result.append(f'#Family\tChild\tFather\tMother\tChild_Gender\t{IDs_str}\n')
+    identifiers_str = '\t'.join(identifiers)
+    ped.append(f'# Family\tChild\tFather\tMother\tChild_Gender\t{identifiers_str}\n')
+
     for i in range(len(names)):
-        variants_str = '\t'.join(variants[i])
-        result.append(f'fam\t{names[i]}\t0\t0\t0\t{variants_str}\n')
+        variant_str = '\t'.join(variants[i])
+        ped.append(f'1\t{names[i]}\t0\t0\t0\t{variant_str}\n')
 
-    return result, IDs
-
-
-def create_dat(ids):
-
-    result = []
-    for i in range(len(ids)):
-        result.append(f'M\t{ids[i]}\n')
-
-    return result
-
-
-def create_map(ids):
-
-    result = []
-    for i in range(len(ids)):
-        chromosome, distance = ids[i].split('_')[0:2]
-        result.append(f'{chromosome[3:]}\t{ids[i]}\t{int(distance)/1000000}\n')
-
-    return result
+    return ped, map, dat
 
 
 def read_vcf(file_name):
 
-    description = None
-    records = []
+    cname2cnum = dict()
+    cnum = 0
+
+    names = None
+    lines = []
 
     with open(file_name) as f:
         for line in f:
 
-            if line[0:2] != '##':
-                if line[0] == '#':
-                    description = line.strip()
-                else:
-                    records.append(line.strip())
+            if line.startswith('##contig'):
+                contig_name = line.split('<')[1].split(',')[0].split('=')[1]
+                cname2cnum[contig_name] = cnum
+                cnum += 1
 
-    return description, records
+            if line.startswith('#CHROM'):
+                names = line.split()[9:]
+
+            if not line.startswith('#'):
+                lines.append(line.strip())
+
+    return cname2cnum, names, lines
 
 
 def main():
+
     parser = argparse.ArgumentParser(description='Convert vcf file to ped')
     parser.add_argument('--vcf', required=True)
+    parser.add_argument('--prefix', required=True)
     args = parser.parse_args()
 
-    description, records = read_vcf(args.vcf)
-    ped_lines, marker_IDs = create_ped(description, records)
-    dat_lines = create_dat(marker_IDs)
-    map_lines = create_map(marker_IDs)
+    # print(f'Running {os.environ["_"]} with parameters {sys.argv}')
 
-    with open('../tmp.ped', 'w') as f:
-        f.writelines(ped_lines)
+    cname2cnum, names, lines = read_vcf(args.vcf)
 
-    with open('../tmp.dat', 'w') as f:
-        f.writelines(dat_lines)
+    with open(f'{args.prefix}.cname2cnum.json', 'w') as f:
+        json.dump(cname2cnum, f)
 
-    with open('../tmp.map', 'w') as f:
-        f.writelines(map_lines)
+    ped_lines, map_lines, dat_lines = create_files(cname2cnum, names, lines)
+
+    save_lines(f'{args.prefix}.ped', ped_lines)
+    save_lines(f'{args.prefix}.map', map_lines)
+    save_lines(f'{args.prefix}.dat', dat_lines)
 
 
 if __name__ == '__main__':
