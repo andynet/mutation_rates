@@ -29,7 +29,10 @@ def get_genotype(sample):
 
 def create_ped(description, records):
 
+    result = []
+
     names = description.split()[9:]
+    IDs = []
     variants = []
 
     for i in range(len(names)):
@@ -41,12 +44,39 @@ def create_ped(description, records):
         chromosome = record[0]
         position = record[1]
 
+        ID = f'{chromosome}_{position}'
+        IDs.append(ID)
+
         for i in range(len(names)):
             genotype = get_genotype(record[9+i])
             variants[i].append(genotype)
 
+    IDs_str = '\t'.join(IDs)
+    result.append(f'#Family\tChild\tFather\tMother\tChild_Gender\t{IDs_str}\n')
     for i in range(len(names)):
-        print(names[i], variants[i])
+        variants_str = '\t'.join(variants[i])
+        result.append(f'fam\t{names[i]}\t0\t0\t0\t{variants_str}\n')
+
+    return result, IDs
+
+
+def create_dat(ids):
+
+    result = []
+    for i in range(len(ids)):
+        result.append(f'M\t{ids[i]}\n')
+
+    return result
+
+
+def create_map(ids):
+
+    result = []
+    for i in range(len(ids)):
+        chromosome, distance = ids[i].split('_')[0:2]
+        result.append(f'{chromosome[3:]}\t{ids[i]}\t{int(distance)/1000000}\n')
+
+    return result
 
 
 def read_vcf(file_name):
@@ -72,7 +102,18 @@ def main():
     args = parser.parse_args()
 
     description, records = read_vcf(args.vcf)
-    create_ped(description, records)
+    ped_lines, marker_IDs = create_ped(description, records)
+    dat_lines = create_dat(marker_IDs)
+    map_lines = create_map(marker_IDs)
+
+    with open('../tmp.ped', 'w') as f:
+        f.writelines(ped_lines)
+
+    with open('../tmp.dat', 'w') as f:
+        f.writelines(dat_lines)
+
+    with open('../tmp.map', 'w') as f:
+        f.writelines(map_lines)
 
 
 if __name__ == '__main__':
