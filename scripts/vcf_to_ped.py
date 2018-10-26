@@ -53,19 +53,19 @@ def create_files(cname2cnum, names, lines):
         position = record[1]
         identifiers.append(f'{cname}_{position}')
 
-        map.append(f'{cnum}\t{identifiers[-1]}\t{int(position)/1000000}\n')
-        dat.append(f'M\t{identifiers[-1]}\n')
+        map.append(f'{cnum} {identifiers[-1]}  {int(position)/1000000}\n')
+        dat.append(f' M {identifiers[-1]}\n')
 
         for i in range(len(names)):
             genotype = get_genotype(record[9+i])
             variants[i].append(genotype)
 
     identifiers_str = '\t'.join(identifiers)
-    ped.append(f'# Family\tChild\tFather\tMother\tChild_Gender\t{identifiers_str}\n')
+    ped.append(f'# Family\tChild\tFather\tMother\tChild_Gender  0\t{identifiers_str}\n')
 
     for i in range(len(names)):
-        variant_str = '\t'.join(variants[i])
-        ped.append(f'1\t{names[i]}\t0\t0\t0\t{variant_str}\n')
+        variant_str = ' '.join(variants[i])
+        ped.append(f'1\t{names[i]}\t0\t0\t0  0\t{variant_str}\n')
 
     return ped, map, dat
 
