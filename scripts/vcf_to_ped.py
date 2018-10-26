@@ -60,7 +60,7 @@ def create_files(cname2cnum, names, lines):
             genotype = get_genotype(record[9+i])
             variants[i].append(genotype)
 
-    identifiers_str = '\t'.join(identifiers)
+    identifiers_str = ' '.join(identifiers)
     ped.append(f'# Family\tChild\tFather\tMother\tChild_Gender  0\t{identifiers_str}\n')
 
     for i in range(len(names)):
