@@ -1,4 +1,5 @@
 import argparse
+import math
 
 
 def save_lines(file, lines):
@@ -14,17 +15,23 @@ def filter_loci(result, loci):
     for i in range(len(loci)):
         loci[i] = loci[i].split()
 
+    filtered_count = 0
     for i in range(len(loci[0])):
         tmp = []
         for j in range(len(loci)):
             tmp.append(loci[j][i])
 
         if len(set(tmp[1:])) == 1 and tmp[1].split('/')[0] == tmp[1].split('/')[1]:
-            pass
+            filtered_count += 1
         else:
             for k in range(len(loci)):
                 result[k] = f'{result[k]}{tmp[k]} '
 
+        if i % math.floor(math.sqrt(len(loci[0]))) == 0:
+            print(f'Filtered {filtered_count} out of {i} columns.')
+
+    print(f'Filtered {filtered_count} out of {i} columns.')
+    
     for i in range(len(result)):
         result[i] += '\n'
 
