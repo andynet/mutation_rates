@@ -12,8 +12,10 @@ def filter_loci(result, loci):
     for i in range(len(result)):
         result[i] += '\t'
 
+    variants = []
     for i in range(len(loci)):
         loci[i] = loci[i].split()
+        variants.append([])
 
     filtered_count = 0
     for i in range(len(loci[0])):
@@ -25,15 +27,16 @@ def filter_loci(result, loci):
             filtered_count += 1
         else:
             for k in range(len(loci)):
-                result[k] = f'{result[k]}{tmp[k]} '
+                variants[k].append(tmp[k])
+                # result[k] = f'{result[k]}{tmp[k]} '
 
         if i % math.floor(math.sqrt(len(loci[0]))) == 0:
             print(f'Filtered {filtered_count} out of {i} columns.')
 
     print(f'Filtered {filtered_count} out of {i} columns.')
-    
+
     for i in range(len(result)):
-        result[i] += '\n'
+        result[i] = result[i] + ' '.join(variants[i]) + '\n'
 
     return result
 
