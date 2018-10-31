@@ -37,7 +37,8 @@ def filter_loci(result, loci):
         loci[i] = loci[i].split()
         variants.append([])
 
-    filtered_count = 0
+    polyallelic = 0
+    homozygotic = 0
     loci_count = len(loci[0])
 
     for i in range(loci_count):
@@ -47,21 +48,20 @@ def filter_loci(result, loci):
             tmp.append(loci[j][i])
 
         if i % math.floor(math.sqrt(loci_count)) == 0:
-            print(f'Filtered {filtered_count} out of {i} columns.')
+            print(f'Filtered {polyallelic + homozygotic} ({polyallelic}/{homozygotic}) out of {loci_count} columns.')
 
         if is_polyallelic(tmp[1:]):
-            filtered_count += 1
+            polyallelic += 1
             continue
 
         if is_homozygotic(tmp[1:]):
-            filtered_count += 1
+            homozygotic += 1
             continue
 
         for k in range(len(loci)):
             variants[k].append(tmp[k])
-            # result[k] = f'{result[k]}{tmp[k]} '
 
-    print(f'Filtered {filtered_count} out of {i} columns.')
+    print(f'Filtered {polyallelic + homozygotic} ({polyallelic}/{homozygotic}) out of {loci_count} columns.')
 
     for i in range(len(result)):
         result[i] = result[i] + ' '.join(variants[i]) + '\n'
