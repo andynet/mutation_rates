@@ -48,7 +48,7 @@ def filter_loci(result, loci):
             tmp.append(loci[j][i])
 
         if i % math.floor(math.sqrt(loci_count)) == 0:
-            print(f'Filtered {polyallelic + homozygotic} ({polyallelic}/{homozygotic}) out of {loci_count} columns.')
+            print(f'Filtered {polyallelic + homozygotic} ({polyallelic}/{homozygotic}) out of {i} columns.')
 
         if is_polyallelic(tmp[1:]):
             polyallelic += 1
