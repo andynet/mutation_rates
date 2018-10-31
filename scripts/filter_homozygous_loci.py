@@ -7,6 +7,26 @@ def save_lines(file, lines):
         f.writelines(lines)
 
 
+def is_homozygotic(site):
+    if len(set(site)) == 1 and site[0].split('/')[0] == site[0].split('/')[1]:
+        return True
+    else:
+        return False
+
+
+def is_polyallelic(site):
+    alleles = set('/'.join(site).split('/'))
+
+    if '0' in alleles:
+        # print('Site has unknown variant.')
+        alleles.remove('0')
+
+    if len(alleles) > 2:
+        return True
+    else:
+        return False
+
+
 def filter_loci(result, loci):
 
     for i in range(len(result)):
@@ -18,20 +38,28 @@ def filter_loci(result, loci):
         variants.append([])
 
     filtered_count = 0
-    for i in range(len(loci[0])):
+    loci_count = len(loci[0])
+
+    for i in range(loci_count):
+
         tmp = []
         for j in range(len(loci)):
             tmp.append(loci[j][i])
 
-        if len(set(tmp[1:])) == 1 and tmp[1].split('/')[0] == tmp[1].split('/')[1]:
-            filtered_count += 1
-        else:
-            for k in range(len(loci)):
-                variants[k].append(tmp[k])
-                # result[k] = f'{result[k]}{tmp[k]} '
-
-        if i % math.floor(math.sqrt(len(loci[0]))) == 0:
+        if i % math.floor(math.sqrt(loci_count)) == 0:
             print(f'Filtered {filtered_count} out of {i} columns.')
+
+        if is_polyallelic(tmp[1:]):
+            filtered_count += 1
+            continue
+
+        if is_homozygotic(tmp[1:]):
+            filtered_count += 1
+            continue
+
+        for k in range(len(loci)):
+            variants[k].append(tmp[k])
+            # result[k] = f'{result[k]}{tmp[k]} '
 
     print(f'Filtered {filtered_count} out of {i} columns.')
 
