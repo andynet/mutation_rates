@@ -65,7 +65,7 @@ def create_files(cname2cnum, names, lines):
 
     for i in range(len(names)):
         variant_str = ' '.join(variants[i])
-        ped.append(f'1\t{names[i]}\t0\t0\t0  0\t{variant_str}\n')
+        ped.append(f'1\t{names[i]}\tx\tx\t0  0\t{variant_str}\n')
 
     return ped, map, dat
 
@@ -106,8 +106,8 @@ def main():
 
     cname2cnum, names, lines = read_vcf(args.vcf)
 
-    with open(f'{args.prefix}.cname2cnum.json', 'w') as f:
-        json.dump(cname2cnum, f)
+    # with open(f'{args.prefix}.cname2cnum.json', 'w') as f:
+    #     json.dump(cname2cnum, f)
 
     ped_lines, map_lines, dat_lines = create_files(cname2cnum, names, lines)
 
