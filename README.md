@@ -1,9 +1,13 @@
 # Mutation rates
 
 ## Project structure
-* scripts/
-    * python/
-    * bash/
-* workflow.py
-* environment.yaml
-* README.md
+* data/
+    * (free structure)
+* <repository_name>/
+    * examples/
+    * scripts/
+    * tmp/
+    * workflow.py
+    * environment.yaml
+    * README.md
+    * .gitignore
