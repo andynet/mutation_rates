@@ -1,0 +1,101 @@
+Hapi version 1.03
+January 22, 2011
+-----------------------------------------------------------------------------
+
+Hapi is an algorithm for computing minimum-recombinant and maximum likelihood
+haplotypes for nuclear families.  Hapi takes as input one or more nuclear
+families containing data for both parents and one or more children.  If only
+one child is specified, loci that are heterozygous for all individuals will not
+be phased, and other algorithms that apply to trio data are more appropriate
+for this scenario, while Hapi is applicable to families with two or more
+children.
+
+This release provides separate programs for the minimum-recombinant and
+maximum likelihood versions of Hapi, with names hapi-mr and hapi-ml,
+respectively.
+
+
+To run the supplied example using minimum-recombinant haplotyping, type:
+  $ ./hapi-mr -i example/markers.dat example/map.map example/one-recomb-1.ped
+To run the supplied example using maximum likelihood haplotyping, type:
+  $ ./hapi-ml -i example/markers.dat example/map.map example/one-recomb-1.ped
+
+Hapi will produce a file in the working directory called iv-fam-1-2.01.csv,
+which is a CSV file that can be imported into a spreadsheet that specifies
+the inheritance vector transmitted at each locus.  The inheritance vector is
+encoded with letters A and B for each parent's two homologs, with upper-case
+letters printed at informative loci and lower-case letters at uninformative
+loci (where the outcome of meiosis is not observed).
+
+-----------------------------------------------------------------------------
+
+Usage: ./hapi-[mr/ml] [OPTIONS] <marker list file> <map file> <pedigree file>
+
+Options:
+ -i, --print-iv	print files containing inheritance vectors specifying the
+		transmitted chromosomes for each nuclear family; filenames are:
+		    iv-<family_id>-<father_id>-<mother_id>.<chrom>.<ext>
+		where <ext> is either "csv" (default) or "txt"
+
+ -h, --print-hap
+		print files containing the haplotypes for each nuclear family
+		member; filenames are:
+		    hap-<family_id>-<father_id>-<mother_id>.<chrom>.<ext>
+		where <ext> is either "csv" (default) or "txt"
+
+ -t, --text	print output (either inheritance vectors or haplotypes) in text
+		format instead of the default CSV
+
+ -f, --force	overwrite any existing output files; note: if output file
+		exists, hapi prints a warning to stderr and continues
+
+ -l, --log <filename>
+		log to file <filename>
+
+ -d, --dir <directory-name>
+		put all output files in the specified directory
+
+-----------------------------------------------------------------------------
+
+The three required arguments are:
+
+  <marker list file>
+      This file lists the markers whose genotypes are included in the pedigree
+      file in the order they appear in the pedigree file.  The file should
+      contain one marker per line as follows:
+         M <marker_id>
+      where <marker_id> is the same string used to specify the marker in the
+      map file.
+
+  <map file>
+      This file is a map file in map/ped format, with one marker per line,
+      listed in order of chromosomes and from the smallest genetic distance
+      to the largest.  Each line should read:
+        <chrom_number> <marker_id>  <genetic_distance> [physical_position]
+      where <genetic_distance> is expected to be in centi-Morgans, and
+      [physical_position] is an optional column specifying the physical
+      position where the marker resides on the chromosome.
+
+
+  <pedigree file>
+      This file is a ped file in the map/ped format, with one sample listed per
+      line.  Each line should read:
+	<family_id>  <person_id>  <father_id>  <mother_id>  <gender>
+		     <affected>  <genotypes ...>
+      Each of the ids are alpha-numeric (e.g., "p1", "family", "505", "samp22"
+      are all acceptable ids).  The ids "0" or "x" for a parent indicate that
+      the parent id is unknown.  <gender> is 1 for male, 2 for female or 0 for
+      unknown.  Hapi ignores the numerical <affected> value.  The <genotypes>
+      are expected to be numerical and can optionally be delimited with a '/'
+      character separating the two alleles at each locus.
+      Comments begin with a '#' at the beginning of a line and continue until
+      the end of line.
+
+
+By default Hapi will not produce any output; one of the two printing options
+(inheritance vectors or haplotypes) must be supplied to obtain results.
+
+-----------------------------------------------------------------------------
+
+Please send bug reports, along with a minimal example that produces the
+problem to Amy Williams <amy@csail.mit.edu>.

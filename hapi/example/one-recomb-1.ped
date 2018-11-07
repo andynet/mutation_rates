@@ -1,0 +1,7 @@
+# Note: need 3 children to avoid ambiguity in which child recombined
+fam	1	x	x	1  0	3/3 1/3 3/3 1/3 3/3 1/3 3/3 1/3 3/3 1/3
+fam	2	x	x	2  0	1/3 3/3 1/3 3/3 1/3 3/3 1/3 3/3 1/3 3/3
+fam	3	1	2	1  0	3/3 1/3 3/3 1/3 3/3 1/3 3/3 1/3 3/3 1/3
+fam	4	1	2	2  0	1/3 3/3 1/3 3/3 3/3 3/3 3/3 3/3 3/3 3/3
+# recombination on parent 2 at the locus above arrow    ^
+fam	5	1	2	1  0	3/3 1/3 3/3 1/3 3/3 1/3 3/3 1/3 3/3 1/3
