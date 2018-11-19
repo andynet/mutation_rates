@@ -1,23 +1,13 @@
-# Mutation rates
+# Mutation Rates
 
-## Project structure
-* data/
-    * (free structure)
-* <repository_name>/
-    * examples/
-    * scripts/
-    * tmp/
-    * workflow.py
-    * environment.yaml
-    * README.md
-    * .gitignore
+## Soft filtering
+- filter variants using gatk VQSR
 
-## Hapi
-[hapi](http://hapi.csail.mit.edu/)
+## Hard filtering
+- filter variants using gatk VariantFiltration
 
-```
-wget http://hapi.csail.mit.edu/hapi-1.03-x86_64.tgz
-tar -xvzf hapi-1.03-x86_64.tgz
-mv hapi-1.03-x86_64/ hapi
-rm hapi-1.03-x86_64.tgz
-```
+## Hapi approach 
+- searching recombination using hapi
+
+## Shapeit approach
+- searching recombination using shapeit
