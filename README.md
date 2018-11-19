@@ -11,3 +11,8 @@
 
 ## Shapeit approach
 - searching recombination using shapeit
+
+# envs
+-bcftools
+-tabix
+-gwf

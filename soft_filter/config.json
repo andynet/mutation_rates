@@ -1,0 +1,6 @@
+{
+  "install_dir": "tmp",
+  "raw_vcf": "examples/raw.vcf.gz",
+  "known_vcf": "examples/known.vcf.gz",
+
+}
