@@ -19,3 +19,11 @@ from gwf import Workflow
 # ./duohmm -H duohmm-example \
 #          -M genetic_map_chr10_combined_b37.txt \
 #          -O duohmm-example-corrected
+
+# shapeit approach
+    # plink2 --vcf chimp_chr9.PASS.vcf --out file
+    # shapeit --input-bed file.bed file.bim file.fam \
+    #         --input-map file.gmap \
+    #         --duohmm \
+    #         --output-max gwas-duohmm \
+    #         --output-graph gwas-duohmm.graph
