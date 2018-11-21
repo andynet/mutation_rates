@@ -1,0 +1,3 @@
+project_dir: '/home/andrej/Projects/mutation_rates'
+input_vcf: 'some.vcf'
+reference: 'some.fa'

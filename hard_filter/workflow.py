@@ -1,48 +1,51 @@
 from gwf import Workflow
+import yaml
+import os
 
 
-def vcf_filter(vcf):
-    chromosomes = 'chr1,chr2A,chr2B,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,' \
-                  'chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22'
-    filtered_vcf = vcf.replace('.vcf.gz', '') + '.filtered.vcf.gz'
+def hard_filter(in_vcf, ref, out_vcf):
 
-    inputs = [f'{vcf}']
-    outputs = [f'{filtered_vcf}']
-    options = {}
-    spec = f'''
-        bcftools view   \
-        -O z                `# output vcf.gz`   \
-        -r {chromosomes}    `# regions`         \
-        -v snps             `# select SNP`      \
-        -m 2                `# min alleles 2`   \
-        -M 2                `# max alleles 2`   \
-        {vcf} > {filtered_vcf}
-    '''
+    _filter = 'QD < 2.0 || FS > 30.0 || MQ < 40.0 || MQRankSum < -12.5 ' \
+              '|| ReadPosRankSum < -3.0 || ReadPosRankSum > 3 || DP < 250 || DP > 900'
 
-    return inputs, outputs, options, spec
-
-
-def hard_filter(vcf, ref):
-    out_vcf = vcf.replace('.vcf.gz', '.hf.vcf.gz')
-
-    inputs = [f'{vcf}']
+    inputs = [f'{in_vcf}', f'{ref}']
     outputs = [f'{out_vcf}']
     options = {}
     spec = f'''
+        source /com/extra/GATK/LATEST/load.sh
+        
         gatk \
-            --java-options "-Xmx32G" \
-            -T VariantFiltration                                                \
-            -R {ref}    \
-            -V {vcf}                                        \
-            --filterExpression "QD < 2.0 || FS > 30.0 || MQ < 40.0 || MQRankSum < -12.5 || ReadPosRankSum < -3.0 || ReadPosRankSum > 3 || DP < 250 || DP > 900" \ 
-            --filterName "hard_filter" \ 
+            --java-options "-Xmx32G"        \
+            -T VariantFiltration            \
+            -R {ref}                        \
+            -V {in_vcf}                     \
+            --filterExpression {_filter}    \
+            --filterName "hard_filter"      \
             -o {out_vcf}
-            -nt 36
     '''
 
     return inputs, outputs, options, spec
 
 
-input_data = '../../data_raw/chimp.raw.vcf.gz'
-reference = '/project/MutationRates/NewVariantCalling/ref-genomes/panTro5.fa'
+def main():
 
+    with open('config.yaml') as f:
+        config = yaml.safe_load(f)
+
+    gwf = Workflow()
+    project_dir = config['project_dir']
+    input_vcf = config['input_vcf']
+    base = os.path.basename(input_vcf)
+    reference = config['reference']
+
+    out_dir = f'{project_dir}/data_hard_filter'
+    os.makedirs(out_dir, mode=0o775, exist_ok=True)
+    output_vcf = f'{out_dir}/{base}'
+
+    name = f'hard_filter_{base}'
+    template = hard_filter(input_vcf, reference, output_vcf)
+    gwf.target_from_template(name, template)
+
+
+if __name__ == '__main__':
+    main()
