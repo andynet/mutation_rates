@@ -1,0 +1,3 @@
+project_dir: '/home/andyb/MutationRates/faststorage/Andrej'
+input_vcf: '/home/andyb/MutationRates/faststorage/Andrej/data_hard_filter/split/'
+hapi_exe: '/home/andyb/MutationRates/faststorage/Andrej/mutation_rates/tools/hapi/hapi-mr'
