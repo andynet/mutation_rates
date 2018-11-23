@@ -43,8 +43,18 @@ def select_passed(_in, out):
     return inputs, outputs, options, spec
 
 
+def vcf_tabix(vcf):
+    inputs = [f'{vcf}']
+    outputs = [f'{vcf}.tbi']
+    options = {}
+    spec = f"""
+        tabix -p vcf {vcf}
+    """
+    return inputs, outputs, options, spec
+
+
 def extract_chromosome(_in, out, chromosome):
-    inputs = [f'{_in}']
+    inputs = [f'{_in}', f'{_in}.tbi']
     outputs = [f'{out}']
     options = {}
     spec = f'''
@@ -81,6 +91,10 @@ def main(workflow):
     template = select_passed(_in, out)
     workflow.target_from_template(name, template)
 
+    name = f'tabix_{base}'
+    template = vcf_tabix(out)
+    workflow.target_from_template(name, template)
+
     _in = out
     split_dir = os.path.dirname(_in) + '/split'
     os.makedirs(split_dir, mode=0o755, exist_ok=True)
@@ -94,6 +108,10 @@ def main(workflow):
 
         name = f'extract_chromosome_{out_file}'
         template = extract_chromosome(_in, out, chromosome)
+        workflow.target_from_template(name, template)
+
+        name = f'tabix_{out_file}'
+        template = vcf_tabix(out)
         workflow.target_from_template(name, template)
 
 
