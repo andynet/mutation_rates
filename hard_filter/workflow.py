@@ -34,8 +34,9 @@ def select_passed(_in, out):
     outputs = [f'{out}']
     options = {}
     spec = f'''
-        awk -F '\t' '{{if($0 ~ /\#/) print; else if($7 == "PASS") print}}'  \
-            {_in} > {tmp}
+        less {_in} \
+            | awk -F '\t' '{{if($0 ~ /\#/) print; else if($7 == "PASS") print}}' \
+            > {tmp}
 
         bgzip -c {tmp} > {out}
     '''
