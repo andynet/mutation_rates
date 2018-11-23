@@ -34,7 +34,7 @@ def select_passed(_in, out):
     outputs = [f'{out}']
     options = {}
     spec = f'''
-        awk -F '\t' '{{if($0 ~ /\#/) print; else if($7 == "PASS") print}}'
+        awk -F '\t' '{{if($0 ~ /\#/) print; else if($7 == "PASS") print}}'  \
             {_in} > {tmp}
 
         bgzip -c {tmp} > {out}
@@ -90,7 +90,7 @@ def main(workflow):
     for chromosome in chromosomes.split(','):
 
         out_file = os.path.basename(_in).replace('.PASS.vcf.gz', f'.{chromosome}.vcf.gz')
-        out = split_dir + out_file
+        out = '/'.join([split_dir, out_file])
 
         name = f'extract_chromosome_{out_file}'
         template = extract_chromosome(_in, out, chromosome)
