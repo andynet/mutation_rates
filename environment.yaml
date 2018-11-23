@@ -1,11 +1,14 @@
 name: mutation_rates
 channels:
+  - conda-forge
   - gwforg
   - bioconda
-  - conda-forge
   - defaults
 dependencies:
-  - bidict=0.17.3=py_0
+  - bcftools=1.9=h4da6232_0
+  - libdeflate=1.0=h470a237_0
+  - plink2=1.90b3.35=0
+  - seqkit=0.9.2=2
   - bzip2=1.0.6=h470a237_2
   - ca-certificates=2018.10.15=ha4d7672_0
   - certifi=2018.10.15=py37_1000
@@ -23,5 +26,15 @@ dependencies:
   - wheel=0.32.1=py37_0
   - xz=5.2.4=h470a237_1
   - zlib=1.2.11=h470a237_3
-prefix: /home/andrej/anaconda3/envs/mutation_rates
+  - click=7.0=py37_0
+  - click-plugins=1.0.4=py37_0
+  - curl=7.61.0=h84994c4_0
+  - libcurl=7.61.0=h1ad7b7a_0
+  - libgfortran=3.0.0=1
+  - libssh2=1.8.0=h9cfc8f7_4
+  - openblas=0.2.19=0
+  - pyyaml=3.13=py37h14c3975_0
+  - yaml=0.1.7=had09818_2
+  - gwf=1.4.0=py_0
+prefix: /home/andyb/miniconda3/envs/mutation_rates
 
