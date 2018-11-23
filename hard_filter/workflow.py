@@ -91,7 +91,7 @@ def main(workflow):
 
         out_file = os.path.basename(_in).replace('.PASS.vcf.gz', f'.{chromosome}.vcf.gz')
         out = split_dir + out_file
-        
+
         extract_chromosome(_in, out, chromosome)
         name = f'extract_chromosome_{out}'
         workflow.target_from_template(name, template)
