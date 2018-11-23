@@ -87,13 +87,13 @@ def main(workflow):
     chromosomes = 'chr1,chr2A,chr2B,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,' \
                   'chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22'
 
-    for chromosome in chromosomes.split():
+    for chromosome in chromosomes.split(','):
 
         out_file = os.path.basename(_in).replace('.PASS.vcf.gz', f'.{chromosome}.vcf.gz')
         out = split_dir + out_file
 
         extract_chromosome(_in, out, chromosome)
-        name = f'extract_chromosome_{out}'
+        name = f'extract_chromosome_{out_file}'
         workflow.target_from_template(name, template)
 
 
