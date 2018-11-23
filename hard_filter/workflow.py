@@ -27,7 +27,37 @@ def hard_filter(in_vcf, ref, out_vcf):
     return inputs, outputs, options, spec
 
 
-def main(gwf):
+def select_passed(_in, out):
+    tmp = out.replace('.gz', '')
+
+    inputs = [f'{_in}']
+    outputs = [f'{out}']
+    options = {}
+    spec = f'''
+        awk -F "\t" "{{if($0 ~ /\#/) print; else if($7 == "PASS") print}}"
+            {_in} > {tmp}
+
+        bgzip -c {tmp} > {out}
+    '''
+
+    return inputs, outputs, options, spec
+
+
+def extract_chromosome(_in, out, chromosome):
+    inputs = [f'{_in}']
+    outputs = [f'{out}']
+    options = {}
+    spec = f'''
+        bcftools view   \
+        -O z            \
+        -r ^{chromosome}$      \
+        {_in} > {out}
+    '''
+
+    return inputs, outputs, options, spec
+
+
+def main(workflow):
     with open('config.yaml') as f:
         config = yaml.safe_load(f)
 
@@ -42,9 +72,27 @@ def main(gwf):
 
     name = f'hard_filter_{base}'
     template = hard_filter(input_vcf, reference, output_vcf)
-    gwf.target_from_template(name, template)
+    workflow.target_from_template(name, template)
+
+    _in = output_vcf
+    out = output_vcf.replace('.vcf.gz', '.PASS.vcf.gz')
+
+    name = f'select_passed_{base}'
+    template = select_passed(_in, out)
+    workflow.target_from_template(name, template)
+
+    _in = out
+    split_dir = os.path.dirname(_in) + '/split'
+    os.makedirs(split_dir, mode=0o755, exist_ok=True)
+    chromosomes = 'chr1,chr2A,chr2B,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,' \
+                  'chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22'
+
+    for chromosome in chromosomes.split():
+
+        out = split_dir + os.path.basename(_in).replace('.PASS.vcf.gz', f'.{chromosome}.vcf.gz')
+        extract_chromosome(_in, out, chromosome)
+        workflow.target_from_template(name, template)
 
 
 gwf = Workflow()
 main(gwf)
-
