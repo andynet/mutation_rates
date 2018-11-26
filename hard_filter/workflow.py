@@ -32,7 +32,7 @@ def select_passed(_in, out):
 
     inputs = [f'{_in}']
     outputs = [f'{out}']
-    options = {}
+    options = {'memory': '36G'}
     spec = f'''
         less {_in} \
             | awk -F '\t' '{{if($0 ~ /\#/) print; else if($7 == "PASS") print}}' \
@@ -61,7 +61,7 @@ def extract_chromosome(_in, out, chromosome):
     spec = f'''
         bcftools view   \
         -O z            \
-        -r ^{chromosome}$      \
+        -r {chromosome} \
         {_in} > {out}
     '''
 

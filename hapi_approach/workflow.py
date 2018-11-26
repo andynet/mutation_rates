@@ -5,11 +5,14 @@ import os
 
 def convert_vcf(vcf, prefix):
 
+    tmp = vcf.replace('.gz', '')
+
     inputs = [f'{vcf}']
     outputs = [f'{prefix}.dat', f'{prefix}.map', f'{prefix}.ped']
-    options = {}
+    options = {'memory': '8g'}
     spec = f'''
-        python scripts/vcf_to_ped.py {vcf} --prefix {prefix}
+        bgzip -cd {vcf} > {tmp}
+        python scripts/vcf_to_ped.py --vcf {tmp} --prefix {prefix}
     '''
 
     return inputs, outputs, options, spec
@@ -50,19 +53,19 @@ def main(workflow):
         chr_dir = f'{hapi_dir}/{_chr}'
         os.makedirs(chr_dir, mode=0o775, exist_ok=True)
 
-        tmp = base.replace('.vcf', '')
+        tmp = base.replace('.vcf.gz', '')
         prefix = f'{chr_dir}/{tmp}'
 
         name = f'convert_vcf_{base}'
         template = convert_vcf(input_vcf, prefix)
-        print(template[3].strip())
+        # print(template[3].strip())
         workflow.target_from_template(name, template)
 
         dat, _map, ped = template[1]
 
         name = f'run_hapi_{base}'
         template = run_hapi(hapi_exe, dat, _map, ped, chr_dir)
-        print(template[3].strip())
+        # print(template[3].strip())
         workflow.target_from_template(name, template)
 
 
