@@ -42,6 +42,7 @@ def main(workflow):
     chromosomes = config['chromosomes'].split(',')
     generic_input_vcf = config['generic_input_vcf']
     hapi_exe = config['hapi_exe']
+    pedigree = config['pedigree']
 
     hapi_dir = f'{project_dir}/data_hapi_approach'
     os.makedirs(hapi_dir, mode=0o775, exist_ok=True)
@@ -62,6 +63,10 @@ def main(workflow):
         workflow.target_from_template(name, template)
 
         dat, _map, ped = template[1]
+
+        name = f'insert_pedigree_{base}'
+        template = insert_pedigree(ped, pedigree)
+        workflow.target_from_template(name, template)
 
         name = f'run_hapi_{base}'
         template = run_hapi(hapi_exe, dat, _map, ped, chr_dir)
