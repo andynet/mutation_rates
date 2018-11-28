@@ -18,6 +18,34 @@ def convert_vcf_to_bim(vcf, prefix):
     return inputs, outputs, options, spec
 
 
+def create_gmap(vcf, prefix):
+
+    inputs = [f'{vcf}']
+    outputs = [f'{prefix}.vcf', f'{prefix}_map.txt']
+    options = {}
+    spec = f'''
+        python scripts/prepare_input.py --vcf {vcf} --prefix {prefix}
+    '''
+
+    return inputs, outputs, options, spec
+
+
+def run_shapeit(shapeit_exe, bed, bim, fam, gmap, out):
+
+    inputs = [f'{bed}', f'{bim}', f'{fam}', f'{gmap}']
+    outputs = [f'{out}.graph']
+    options = {}
+    spec = f'''
+        {shapeit_exe}   --input-bed {bed} {bim} {fam}   \
+                        --input-map {gmap}              \
+                        --duohmm                        \
+                        --output-max {out}              \
+                        --output-graph {out}.graph
+    '''
+
+    return inputs, outputs, options, spec
+
+
 def main(workflow):
 
     with open('config.yaml') as f:
@@ -47,45 +75,22 @@ def main(workflow):
         workflow.target_from_template(name, template)
 
         bed, bim, fam = template[1]
+        input_vcf = input_vcf.replace('.gz', '')
 
-        # name = f'insert_pedigree_{base}'
-        # template = insert_pedigree(ped, pedigree, connected_ped)
-        # workflow.target_from_template(name, template)
-        #
-        # name = f'run_hapi_{base}'
-        # template = run_hapi(hapi_exe, dat, _map, connected_ped, chr_dir)
-        # workflow.target_from_template(name, template)
+        name = f'create_map_{base}'
+        template = create_gmap(input_vcf, prefix)
+        workflow.target_from_template(name, template)
+
+        out = bed.replace('.bed', '')
+        gmap = template[1][1]
+
+        name = f'run_shapeit_{base}'
+        template = run_shapeit(shapeit_exe, bed, bim, fam, gmap, out)
+        workflow.target_from_template(name, template)
 
 
 gwf = Workflow()
 main(gwf)
 
-from gwf import Workflow
-
-# prepare_input.py --vcf ../example/chimp_chr9_50.vcf --prefix ../example/tmp
-
-# shapeit   --force                                                 \
-#           --input-vcf ./example/tmp.vcf                           \
-#           --input-map ./example/tmp_map.txt                       \
-#           --output-max ./example/tmp.haps ./example/tmp.sample
-
-## I will need this
-## https://mathgen.stats.ox.ac.uk/genetics_software/shapeit/shapeit.html#bed
-
-# shapeit -B gwas-nomendel \
-#         -M genetic_map.txt \
-#         --duohmm \
-#         --output-max gwas-duohmm \
-#         --output-graph gwas-duohmm.graph
-
-# ./duohmm -H duohmm-example \
-#          -M genetic_map_chr10_combined_b37.txt \
-#          -O duohmm-example-corrected
-
-# shapeit approach
-    # plink2 --vcf chimp_chr9.PASS.vcf --out file
-    # shapeit --input-bed file.bed file.bim file.fam \
-    #         --input-map file.gmap \
-    #         --duohmm \
-    #         --output-max gwas-duohmm \
-    #         --output-graph gwas-duohmm.graph
+# I will need this
+# https://mathgen.stats.ox.ac.uk/genetics_software/shapeit/shapeit.html#bed
