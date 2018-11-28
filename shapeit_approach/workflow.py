@@ -33,15 +33,27 @@ def create_gmap(vcf, prefix):
 def run_shapeit(shapeit_exe, bed, bim, fam, gmap, out):
 
     inputs = [f'{bed}', f'{bim}', f'{fam}', f'{gmap}']
-    outputs = [f'{out}.graph']
+    outputs = [f'{out}.haps', f'{out}.sample']
     options = {}
     spec = f'''
-        {shapeit_exe}   --input-bed {bed} {bim} {fam}   \
-                        --input-map {gmap}              \
-                        --duohmm                        \
-                        --output-max {out}              \
-                        --output-graph {out}.graph      \
+        {shapeit_exe}   --input-bed {bed} {bim} {fam}           \
+                        --input-map {gmap}                      \
+                        --output-max {out}.haps {out}.sample    \
                         --force
+    '''
+
+    return inputs, outputs, options, spec
+
+
+def run_duohmm(duohmm_exe, haps, gmap, out):
+
+    inputs = [f'{haps}', f'{gmap}']
+    outputs = [f'{out}.rec']
+    options = {}
+    spec = f'''
+        {duohmm_exe} --haps {haps}              \
+                     --input-gen {gmap}         \
+                     --output-rec {out}.rec
     '''
 
     return inputs, outputs, options, spec
@@ -56,6 +68,7 @@ def main(workflow):
     chromosomes = config['chromosomes'].split(',')
     generic_input_vcf = config['generic_input_vcf']
     shapeit_exe = config['shapeit_exe']
+    duohmm_exe = config['duohmm_exe']
     pedigree = config['pedigree']
 
     shapeit_dir = f'{project_dir}/data_shapeit'
@@ -71,7 +84,7 @@ def main(workflow):
         tmp = base.replace('.vcf.gz', '')
         prefix = f'{chr_dir}/{tmp}'
 
-        name = f'convert_vcf_to_bim{base}'
+        name = f'convert_vcf_to_bim_{base}'
         template = convert_vcf_to_bim(input_vcf, prefix)
         workflow.target_from_template(name, template)
 
@@ -86,7 +99,13 @@ def main(workflow):
         gmap = template[1][1]
 
         name = f'run_shapeit_{base}'
-        template = run_shapeit(shapeit_exe, bed, bim, fam, gmap, out)
+        template = run_shapeit(shapeit_exe, bed, bim, pedigree, gmap, out)
+        workflow.target_from_template(name, template)
+
+        haps, sample = template[1]
+
+        name = f'run_duohmm_{base}'
+        template = run_duohmm(duohmm_exe, haps, gmap, out)
         workflow.target_from_template(name, template)
 
 
