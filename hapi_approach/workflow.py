@@ -33,6 +33,21 @@ def run_hapi(hapi_exe, dat, _map, ped, out_dir):
     return inputs, outputs, options, spec
 
 
+def insert_pedigree(ped, pedigree, connected_ped):
+
+    tmp = ped.replace('.ped', '.ped.data')
+
+    inputs = [f'{ped}', f'{pedigree}']
+    outputs = [f'{connected_ped}']
+    options = {}
+    spec = f'''
+        less {ped} | cut -f6- > {tmp}
+        paste {pedigree} {tmp} > {connected_ped}
+    '''
+
+    return inputs, outputs, options, spec
+
+
 def main(workflow):
 
     with open('config.yaml') as f:
@@ -59,25 +74,19 @@ def main(workflow):
 
         name = f'convert_vcf_{base}'
         template = convert_vcf(input_vcf, prefix)
-        # print(template[3].strip())
         workflow.target_from_template(name, template)
 
         dat, _map, ped = template[1]
+        connected_ped = ped.replace('.ped', '.connected.ped')
 
         name = f'insert_pedigree_{base}'
-        template = insert_pedigree(ped, pedigree)
+        template = insert_pedigree(ped, pedigree, connected_ped)
         workflow.target_from_template(name, template)
 
         name = f'run_hapi_{base}'
-        template = run_hapi(hapi_exe, dat, _map, ped, chr_dir)
-        # print(template[3].strip())
+        template = run_hapi(hapi_exe, dat, _map, connected_ped, chr_dir)
         workflow.target_from_template(name, template)
 
 
 gwf = Workflow()
 main(gwf)
-
-
-# hapi approach
-    # python vcf_to_ped.py --vcf chimp_chr9.PASS.vcf --prefix ./chimp_chr9
-    # ./hapi-mr -i ../hapi_input/chimp_sub.dat ../hapi_input/chimp_sub.map ../hapi_input/chimp_sub.ped;
