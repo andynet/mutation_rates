@@ -34,12 +34,13 @@ def run_shapeit(shapeit_exe, bed, bim, fam, gmap, out):
 
     inputs = [f'{bed}', f'{bim}', f'{fam}', f'{gmap}']
     outputs = [f'{out}.haps', f'{out}.sample']
-    options = {}
+    options = {'walltime': '6000'}
     spec = f'''
         {shapeit_exe}   --input-bed {bed} {bim} {fam}           \
                         --input-map {gmap}                      \
                         --output-max {out}.haps {out}.sample    \
-                        --force
+                        --force                                 \
+                        --duohmm
     '''
 
     return inputs, outputs, options, spec
