@@ -20,7 +20,7 @@ def convert_vcf_to_bim(vcf, prefix):
 
 def create_gmap(vcf, prefix):
 
-    inputs = [f'{vcf}']
+    inputs = [f'{vcf}', f'{prefix}.bed']
     outputs = [f'{prefix}.vcf', f'{prefix}_map.txt']
     options = {'memory': '8g'}
     spec = f'''
@@ -33,7 +33,7 @@ def create_gmap(vcf, prefix):
 def run_shapeit(shapeit_exe, bed, bim, fam, gmap, out):
 
     inputs = [f'{bed}', f'{bim}', f'{fam}', f'{gmap}']
-    outputs = [f'{out}.haps', f'{out}.sample']
+    outputs = [f'{out}.haps', f'{out}.sample', f'{out}.shapeit.success']
     options = {'walltime': '6000'}
     spec = f'''
         {shapeit_exe}   --input-bed {bed} {bim} {fam}           \
@@ -41,6 +41,8 @@ def run_shapeit(shapeit_exe, bed, bim, fam, gmap, out):
                         --output-max {out}.haps {out}.sample    \
                         --force                                 \
                         --duohmm
+
+        touch {out}.shapeit.success
     '''
 
     return inputs, outputs, options, spec
@@ -103,7 +105,7 @@ def main(workflow):
         template = run_shapeit(shapeit_exe, bed, bim, pedigree, gmap, out)
         workflow.target_from_template(name, template)
 
-        haps, sample = template[1]
+        haps, sample, success = template[1]
 
         name = f'run_duohmm_{base}'
         template = run_duohmm(duohmm_exe, haps, gmap, out)
