@@ -9,7 +9,7 @@ def convert_vcf_to_bim(vcf, prefix):
 
     inputs = [f'{vcf}']
     outputs = [f'{prefix}.bed', f'{prefix}.bim', f'{prefix}.fam']
-    options = {}
+    options = {'memory': '8g'}
     spec = f'''
         bgzip -cd {vcf} > {tmp}
         plink2 --vcf {tmp} --out {prefix}
@@ -22,7 +22,7 @@ def create_gmap(vcf, prefix):
 
     inputs = [f'{vcf}']
     outputs = [f'{prefix}.vcf', f'{prefix}_map.txt']
-    options = {}
+    options = {'memory': '8g'}
     spec = f'''
         python scripts/prepare_input.py --vcf {vcf} --prefix {prefix}
     '''
@@ -40,7 +40,8 @@ def run_shapeit(shapeit_exe, bed, bim, fam, gmap, out):
                         --input-map {gmap}              \
                         --duohmm                        \
                         --output-max {out}              \
-                        --output-graph {out}.graph
+                        --output-graph {out}.graph      \
+                        --force
     '''
 
     return inputs, outputs, options, spec
