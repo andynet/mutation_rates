@@ -12,7 +12,7 @@ def convert_vcf_to_bim(vcf, prefix):
     options = {'memory': '8g'}
     spec = f'''
         bgzip -cd {vcf} > {tmp}
-        plink2 --vcf {tmp} --out {prefix}
+        plink2 --vcf {tmp} --out {prefix} --allow-extra-chr
     '''
 
     return inputs, outputs, options, spec
@@ -54,7 +54,7 @@ def run_duohmm(duohmm_exe, haps, gmap, out):
     outputs = [f'{out}.rec']
     options = {}
     spec = f'''
-        {duohmm_exe} --haps {haps}              \
+        {duohmm_exe} --haps {out}              \
                      --input-gen {gmap}         \
                      --output-rec {out}.rec
     '''
