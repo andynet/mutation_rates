@@ -33,13 +33,12 @@ def create_gmap(vcf, prefix):
 def run_shapeit(shapeit_exe, bed, bim, fam, gmap, out):
 
     inputs = [f'{bed}', f'{bim}', f'{fam}', f'{gmap}']
-    outputs = [f'{out}.haps', f'{out}.sample', f'{out}.shapeit.success']
-    options = {'walltime': '6000'}
+    outputs = [f'{out}.graph', f'{out}.shapeit.success']
+    options = {'walltime': '6000', 'memory': '8g'}
     spec = f'''
         {shapeit_exe}   --input-bed {bed} {bim} {fam}           \
                         --input-map {gmap}                      \
-                        --output-max {out}.haps {out}.sample    \
-                        --force                                 \
+                        --output-graph {out}.graph              \
                         --duohmm
 
         touch {out}.shapeit.success
@@ -48,18 +47,47 @@ def run_shapeit(shapeit_exe, bed, bim, fam, gmap, out):
     return inputs, outputs, options, spec
 
 
-def run_duohmm(duohmm_exe, haps, gmap, out):
+# def run_duohmm(duohmm_exe, haps, gmap, out):
+#
+#     inputs = [f'{haps}', f'{gmap}']
+#     outputs = [f'{out}.rec']
+#     options = {}
+#     spec = f'''
+#         {duohmm_exe} --haps {haps}              \
+#                      --input-gen {gmap}         \
+#                      --output-rec {out}.rec
+#     '''
+#
+#     return inputs, outputs, options, spec
 
-    inputs = [f'{haps}', f'{gmap}']
-    outputs = [f'{out}.rec']
-    options = {}
+
+def run_duohmm_sims(shapeit_exe, duohmm_exe, nsims, graph, gmap, out, success):
+
+    inputs = [shapeit_exe, duohmm_exe, graph, gmap, success]
+    outputs = [f'{out}.sims.success']
+    options = {'memory': '8g', 'walltime': '6000'}
     spec = f'''
-        {duohmm_exe} --haps {haps}              \
-                     --input-gen {gmap}         \
-                     --output-rec {out}.rec
+        for i in $(seq 1 {nsims});
+        do
+            {shapeit_exe}   -convert                            \ 
+                            --input-graph {graph}               \
+                            --output-sample {out}.${{i}}.sim    \
+                            --seed ${{i}}
+
+            {duohmm_exe}    --haps {out}.${{i}}.sim             \ 
+                            --input-gen {gmap}                  \
+                            --output-rec {out}.${{i}}.rec
+
+        done 
+
+        touch {out}.sims.success
     '''
 
     return inputs, outputs, options, spec
+
+
+def run_mapavg():
+    pass
 
 
 def main(workflow):
@@ -105,10 +133,10 @@ def main(workflow):
         template = run_shapeit(shapeit_exe, bed, bim, pedigree, gmap, out)
         workflow.target_from_template(name, template)
 
-        haps, sample, success = template[1]
+        graph, success = template[1]
 
-        name = f'run_duohmm_{base}'
-        template = run_duohmm(duohmm_exe, haps, gmap, out)
+        name = f'run_duohmm_sims_{base}'
+        template = run_duohmm_sims(shapeit_exe, duohmm_exe, 10, graph, gmap, out, success)
         workflow.target_from_template(name, template)
 
 
