@@ -12,7 +12,7 @@ def convert_vcf_to_bim(vcf, prefix):
     options = {'memory': '8g'}
     spec = f'''
         bgzip -cd {vcf} > {tmp}
-        plink2 --vcf {tmp} --out {prefix}
+        plink2 --vcf {tmp} --out {prefix} --allow-extra-chr
     '''
 
     return inputs, outputs, options, spec
