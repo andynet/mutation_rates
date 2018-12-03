@@ -39,7 +39,8 @@ def run_shapeit(shapeit_exe, bed, bim, fam, gmap, out):
         {shapeit_exe}   --input-bed {bed} {bim} {fam}           \
                         --input-map {gmap}                      \
                         --output-graph {out}.graph              \
-                        --duohmm
+                        --duohmm                                \
+                        --force
 
         touch {out}.shapeit.success
     '''
