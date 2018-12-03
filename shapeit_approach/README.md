@@ -15,4 +15,6 @@ mv shapeit.v2.904.3.10.0-693.11.6.el7.x86_64/ shapeit/
 wget https://mathgen.stats.ox.ac.uk/genetics_software/duohmm/duohmm_v0.1.7.tar.gz
 tar -xvzf duohmm_v0.1.7.tar.gz 
 mv duohmm_v0.1.7/ duohmm/
+
+2to3 -w ../tools/duohmm/mapavg.py
 ```

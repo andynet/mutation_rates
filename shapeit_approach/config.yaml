@@ -4,3 +4,4 @@ generic_input_vcf: '/home/andyb/MutationRates/faststorage/Andrej/data_hard_filte
 shapeit_exe: '/home/andyb/MutationRates/faststorage/Andrej/mutation_rates/tools/shapeit/bin/shapeit'
 duohmm_exe: '/home/andyb/MutationRates/faststorage/Andrej/mutation_rates/tools/duohmm/duohmm'
 pedigree: '/home/andyb/MutationRates/faststorage/Andrej/data_shapeit/chimp.fam'
+mapavg_script: '/home/andyb/MutationRates/faststorage/Andrej/mutation_rates/tools/duohmm/mapavg.py'

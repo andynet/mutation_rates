@@ -48,20 +48,6 @@ def run_shapeit(shapeit_exe, bed, bim, fam, gmap, out):
     return inputs, outputs, options, spec
 
 
-# def run_duohmm(duohmm_exe, haps, gmap, out):
-#
-#     inputs = [f'{haps}', f'{gmap}']
-#     outputs = [f'{out}.rec']
-#     options = {}
-#     spec = f'''
-#         {duohmm_exe} --haps {haps}              \
-#                      --input-gen {gmap}         \
-#                      --output-rec {out}.rec
-#     '''
-#
-#     return inputs, outputs, options, spec
-
-
 def run_duohmm_sims(shapeit_exe, duohmm_exe, nsims, graph, gmap, out, success):
 
     inputs = [shapeit_exe, duohmm_exe, graph, gmap, success]
@@ -87,8 +73,16 @@ def run_duohmm_sims(shapeit_exe, duohmm_exe, nsims, graph, gmap, out, success):
     return inputs, outputs, options, spec
 
 
-def run_mapavg():
-    pass
+def run_mapavg(mapavg_script, out):
+
+    inputs = [f'{out}.sims.success']
+    outputs = [f'{out}.recombinations.results']
+    options = {}
+    spec = f'''
+        python {mapavg_script} {out}.*.rec > {out}.recombinations.results
+    '''
+
+    return inputs, outputs, options, spec
 
 
 def main(workflow):
@@ -102,6 +96,7 @@ def main(workflow):
     shapeit_exe = config['shapeit_exe']
     duohmm_exe = config['duohmm_exe']
     pedigree = config['pedigree']
+    mapavg_script = config['mapavg_script']
 
     shapeit_dir = f'{project_dir}/data_shapeit'
     os.makedirs(shapeit_dir, mode=0o775, exist_ok=True)
@@ -140,9 +135,10 @@ def main(workflow):
         template = run_duohmm_sims(shapeit_exe, duohmm_exe, 10, graph, gmap, out, success)
         workflow.target_from_template(name, template)
 
+        name = f'run_mapavg_{base}'
+        template = run_mapavg(mapavg_script, out)
+        workflow.target_from_template(name, template)
+
 
 gwf = Workflow()
 main(gwf)
-
-# I will need this
-# https://mathgen.stats.ox.ac.uk/genetics_software/shapeit/shapeit.html#bed
