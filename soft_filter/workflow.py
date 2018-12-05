@@ -3,6 +3,22 @@ import yaml
 import os
 
 
+def extract_chromosome(_in, out, chromosome):
+    inputs = [f'{_in}', f'{_in}.tbi']
+    outputs = [f'{out}', f'{out}.tbi']
+    options = {}
+    spec = f'''
+            bcftools view   \
+            -O z            \
+            -r {chromosome} \
+            {_in} > {out}
+
+            tabix -p vcf {out}
+        '''
+
+    return inputs, outputs, options, spec
+
+
 def run_variant_recalibrator(ref, call, res, out):
 
     inputs = [f'{ref}', f'{call}', f'{res}']
@@ -32,7 +48,7 @@ def run_variant_recalibrator(ref, call, res, out):
 def apply_recalibration(ref, call, recal, tranch, out):
 
     inputs = [f'{ref}', f'{call}', f'{recal}', f'{tranch}']
-    outputs = [f'{out}.vcf']
+    outputs = [f'{out}.recalibrated.vcf']
     options = {'memory': '32G', 'walltime': '18000'}
     spec = f'''
         source /com/extra/GATK/LATEST/load.sh
@@ -46,7 +62,7 @@ def apply_recalibration(ref, call, recal, tranch, out):
             --ts_filter_level 99.0      \
             -recalFile {recal}          \
             -tranchesFile {tranch}      \
-            -o {out}.vcf                \
+            -o {out}.recalibrated.vcf   \
             -nt 64
     '''
 
@@ -70,39 +86,51 @@ def select_passed(_in, out):
     return inputs, outputs, options, spec
 
 
-def main():
+def main(workflow):
 
     with open('config.yaml') as f:
         config = yaml.safe_load(f)
 
-    gwf = Workflow()
     project_dir = config['project_dir']
     call_set = config['call_set']
     resource_set = config['resource_set']
     reference = config['reference']
+    chromosomes = config['chromosomes'].split(',')
 
     out_dir = f'{project_dir}/data_soft_filter'
     os.makedirs(out_dir, mode=0o775, exist_ok=True)
-    out = f'{out_dir}/chimp'
 
-    name = f'run_variant_recalibrator_{call_set}'
-    template = run_variant_recalibrator(reference, call_set, resource_set, out)
-    gwf.target_from_template(name, template)
+    base = os.path.basename(call_set)
 
-    recal, tranch, plot = template[1]
+    for chromosome in chromosomes:
 
-    name = f'apply_recalibration_{call_set}'
-    template = apply_recalibration(reference, call_set, recal, tranch, out)
-    gwf.target_from_template(name, template)
+        chr_dir = f'{out_dir}/{chromosome}'
+        os.makedirs(chr_dir, mode=0o755, exist_ok=True)
 
-    out, = template[1]
+        out = f'{chr_dir}/{base}'
+        name = f'extract_chromosome_{chromosome}'
+        template = extract_chromosome(call_set, out, chromosome)
+        workflow.target_from_template(name, template)
 
-    name = f'select_passed_{out}'
-    template = select_passed()
-    gwf.target_from_template(name, template)
+        chr_vcf, chr_tbi = template[1]
+        out_base = out.replace('.vcf.gz', '')
 
-    # split to chromosomes?
+        name = f'run_variant_recalibrator_{chromosome}'
+        template = run_variant_recalibrator(reference, chr_vcf, resource_set, out_base)
+        gwf.target_from_template(name, template)
+
+        recal, tranch, plot = template[1]
+
+        name = f'apply_recalibration_{chromosome}'
+        template = apply_recalibration(reference, call_set, recal, tranch, out_base)
+        gwf.target_from_template(name, template)
+
+        _in, = template[1]
+
+        name = f'select_passed_{chromosome}'
+        template = select_passed(_in, out)
+        gwf.target_from_template(name, template)
 
 
-if __name__ == '__main__':
-    main()
+gwf = Workflow()
+main(gwf)
