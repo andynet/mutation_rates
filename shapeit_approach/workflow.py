@@ -56,12 +56,12 @@ def run_duohmm_sims(shapeit_exe, duohmm_exe, nsims, graph, gmap, out, success):
     spec = f'''
         for i in $(seq 1 {nsims});
         do
-            {shapeit_exe}   -convert                            \ 
+            {shapeit_exe}   -convert                            \
                             --input-graph {graph}               \
                             --output-sample {out}.${{i}}.sim    \
                             --seed ${{i}}
 
-            {duohmm_exe}    --haps {out}.${{i}}.sim             \ 
+            {duohmm_exe}    --haps {out}.${{i}}.sim             \
                             --input-gen {gmap}                  \
                             --output-rec {out}.${{i}}.rec
 
