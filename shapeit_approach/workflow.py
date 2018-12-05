@@ -54,7 +54,7 @@ def run_duohmm_sims(shapeit_exe, duohmm_exe, nsims, graph, gmap, out, success):
     outputs = [f'{out}.sims.success']
     options = {'memory': '8g', 'walltime': '6000'}
     spec = f'''
-        for i in $(seq 1 {nsims});
+        for i in $(seq 0 {nsims});
         do
             {shapeit_exe}   -convert                            \
                             --input-graph {graph}               \
@@ -79,7 +79,7 @@ def run_mapavg(mapavg_script, out):
     outputs = [f'{out}.recombinations.results']
     options = {}
     spec = f'''
-        python {mapavg_script} {out}.*.rec > {out}.recombinations.results
+        /usr/bin/python2 {mapavg_script} {out}.*.rec > {out}.recombinations.results
     '''
 
     return inputs, outputs, options, spec
@@ -132,7 +132,7 @@ def main(workflow):
         graph, success = template[1]
 
         name = f'run_duohmm_sims_{base}'
-        template = run_duohmm_sims(shapeit_exe, duohmm_exe, 10, graph, gmap, out, success)
+        template = run_duohmm_sims(shapeit_exe, duohmm_exe, 9, graph, gmap, out, success)
         workflow.target_from_template(name, template)
 
         name = f'run_mapavg_{base}'

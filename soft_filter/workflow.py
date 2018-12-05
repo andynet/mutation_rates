@@ -19,15 +19,13 @@ def extract_chromosome(_in, out, chromosome):
     return inputs, outputs, options, spec
 
 
-def run_variant_recalibrator(ref, call, res, out):
+def run_variant_recalibrator(ref, call, res, out, gatk_exe):
 
     inputs = [f'{ref}', f'{call}', f'{res}']
     outputs = [f'{out}.recal', f'{out}.tranches', f'{out}_plots.R']
     options = {'memory': '32G', 'walltime': '18000'}
     spec = f'''
-        source /com/extra/GATK/LATEST/load.sh
-        
-        gatk \
+        {gatk_exe} \
             --java-options "-Xmx32G"                                                \
             -T VariantRecalibrator                                                  \
             -R {ref}                                                                \
@@ -45,15 +43,13 @@ def run_variant_recalibrator(ref, call, res, out):
     return inputs, outputs, options, spec
 
 
-def apply_recalibration(ref, call, recal, tranch, out):
+def apply_recalibration(ref, call, recal, tranch, out, gatk_exe):
 
     inputs = [f'{ref}', f'{call}', f'{recal}', f'{tranch}']
     outputs = [f'{out}.recalibrated.vcf']
     options = {'memory': '32G', 'walltime': '18000'}
     spec = f'''
-        source /com/extra/GATK/LATEST/load.sh
-        
-        gatk \
+        {gatk_exe} \
             --java-options "-Xmx32G"    \
             -T ApplyRecalibration       \
             -R {ref}                    \
@@ -96,6 +92,7 @@ def main(workflow):
     resource_set = config['resource_set']
     reference = config['reference']
     chromosomes = config['chromosomes'].split(',')
+    gatk_exe = config['gatk_exe']
 
     out_dir = f'{project_dir}/data_soft_filter'
     os.makedirs(out_dir, mode=0o775, exist_ok=True)
@@ -116,16 +113,17 @@ def main(workflow):
         out_base = out.replace('.vcf.gz', '')
 
         name = f'run_variant_recalibrator_{chromosome}'
-        template = run_variant_recalibrator(reference, chr_vcf, resource_set, out_base)
+        template = run_variant_recalibrator(reference, chr_vcf, resource_set, out_base, gatk_exe)
         gwf.target_from_template(name, template)
 
         recal, tranch, plot = template[1]
 
         name = f'apply_recalibration_{chromosome}'
-        template = apply_recalibration(reference, call_set, recal, tranch, out_base)
+        template = apply_recalibration(reference, call_set, recal, tranch, out_base, gatk_exe)
         gwf.target_from_template(name, template)
 
         _in, = template[1]
+        out = out.replace('.vcf.gz', '.recalibrated.vcf.gz')
 
         name = f'select_passed_{chromosome}'
         template = select_passed(_in, out)
