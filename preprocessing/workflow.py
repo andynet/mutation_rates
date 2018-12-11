@@ -13,8 +13,11 @@ def prepare_fasta(_in, chr_regexp, out):
     spec = f'''
     
         less {_in} | seqkit grep -r -p '{chr_regexp}' > {out}
-        # picard CreateSequenceDictionary -R {out} -O {fa_dict}
-        # samtools faidx {out}
+        
+        rm -f {fa_dict}
+        picard CreateSequenceDictionary R={out} O={fa_dict}
+        
+        samtools faidx {out}
 
     '''
 
@@ -27,7 +30,7 @@ def prepare_vcf(_in, chr_str, out):
 
     inputs = [_in]
     outputs = [out, f'{out}.tbi']
-    options = {'memory': '16g', 'walltime': '1440'}
+    options = {'memory': '32g', 'walltime': '1440'}
     spec = f'''
         bcftools view   \
             -O z                                                            `# output vcf.gz`               \
