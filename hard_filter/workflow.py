@@ -38,7 +38,7 @@ def select_passed(_in, out):
             | awk -F '\t' '{{if($0 ~ /\#/) print; else if($7 == "PASS") print}}' \
             > {tmp}
 
-        bgzip -c {tmp} > {out}
+        less {tmp} | bcftools view -i 'MIN(FORMAT/DP)>10  &  MIN(FORMAT/GQ)>40' | bgzip -c > {out}
     '''
 
     return inputs, outputs, options, spec
@@ -118,3 +118,6 @@ def main(workflow):
 
 gwf = Workflow()
 main(gwf)
+
+# zcat ~/MutationRates/faststorage/Andrej/data_hard_filter/chimp.raw.filtered.PASS.vcf.gz
+# | bcftools view -i 'MIN(FORMAT/DP)>10  &  MIN(FORMAT/GQ)>40'
