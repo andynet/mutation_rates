@@ -32,7 +32,7 @@ def run_variant_recalibrator(ref, call, res, out, gatk_exe):
         source /com/extra/GATK/3.8/load.sh
 
         java                                                                            \
-            -Xmx32g                                                                     \
+            -Xmx16g                                                                     \
             -jar /com/extra/GATK/LATEST/jar-bin/GenomeAnalysisTK.jar                    \
                 -T VariantRecalibrator                                                  \
                 -R {ref}                                                                \
@@ -63,7 +63,7 @@ def apply_recalibration(ref, call, recal, tranch, out, gatk_exe):
         source /com/extra/GATK/3.8/load.sh
 
         java                                                                            \
-            -Xmx32g                                                                     \
+            -Xmx16g                                                                     \
             -jar /com/extra/GATK/LATEST/jar-bin/GenomeAnalysisTK.jar                    \
             -T ApplyRecalibration       \
             -R {ref}                    \
