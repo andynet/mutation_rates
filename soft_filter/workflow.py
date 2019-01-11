@@ -133,7 +133,7 @@ def main(workflow):
         recal, tranch, plot = template[1]
 
         name = f'apply_recalibration_{chromosome}'
-        template = apply_recalibration(reference, call_set, recal, tranch, out_base, gatk_exe)
+        template = apply_recalibration(reference, chr_vcf, recal, tranch, out_base, gatk_exe)
         gwf.target_from_template(name, template)
 
         _in, = template[1]
