@@ -81,7 +81,7 @@ def apply_recalibration(ref, call, recal, tranch, out, gatk_exe):
 
 def select_passed(_in, out):
 
-    tmp = out.replace('.gz', '')
+    tmp = out.replace('.gz', '.tmp')
 
     inputs = [f'{_in}']
     outputs = [f'{out}']
