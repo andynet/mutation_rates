@@ -23,21 +23,28 @@ def run_variant_recalibrator(ref, call, res, out, gatk_exe):
 
     inputs = [f'{ref}', f'{call}', f'{res}']
     outputs = [f'{out}.recal', f'{out}.tranches', f'{out}_plots.R']
-    options = {'memory': '32G', 'walltime': '18000'}
+    options = {'memory': '16G', 'walltime': '18000'}
     spec = f'''
-        {gatk_exe} \
-            --java-options "-Xmx32G"                                                \
-            -T VariantRecalibrator                                                  \
-            -R {ref}                                                                \
-            -input {call}                                                           \
-            -resource:chimp,known=true,training=true,truth=true,prior=15.0 {res}    \
-            -an DP -an QD -an FS -an SOR -an MQ -an MQRankSum -an ReadPosRankSum    \
-            -mode SNP                                                               \
-            -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0                \
-            -recalFile {out}.recal                                                  \
-            -tranchesFile {out}.tranches                                            \
-            -rscriptFile {out}_plots.R                                              \
-            -nt 64
+
+        export LD_LIBRARY_PATH="/com/extra/slurm/LATEST/lib64:/com/extra/slurm/LATEST/lib:"
+
+        source /com/extra/java/8/load.sh
+        source /com/extra/GATK/3.8/load.sh
+
+        java                                                                            \
+            -Xmx32g                                                                     \
+            -jar /com/extra/GATK/LATEST/jar-bin/GenomeAnalysisTK.jar                    \
+                -T VariantRecalibrator                                                  \
+                -R {ref}                                                                \
+                -input {call}                                                           \
+                -resource:chimp,known=false,training=true,truth=true,prior=15.0 {res}   \
+                -an DP -an QD -an FS -an SOR -an MQ -an MQRankSum -an ReadPosRankSum    \
+                -mode SNP                                                               \
+                -tranche 100.0 -tranche 99.9 -tranche 99.0 -tranche 90.0                \
+                -recalFile {out}.recal                                                  \
+                -tranchesFile {out}.tranches                                            \
+                -rscriptFile {out}_plots.R                                              \
+                -nt 16
     '''
 
     return inputs, outputs, options, spec
@@ -47,10 +54,17 @@ def apply_recalibration(ref, call, recal, tranch, out, gatk_exe):
 
     inputs = [f'{ref}', f'{call}', f'{recal}', f'{tranch}']
     outputs = [f'{out}.recalibrated.vcf']
-    options = {'memory': '32G', 'walltime': '18000'}
+    options = {'memory': '16G', 'walltime': '18000'}
     spec = f'''
-        {gatk_exe} \
-            --java-options "-Xmx32G"    \
+        
+        export LD_LIBRARY_PATH="/com/extra/slurm/LATEST/lib64:/com/extra/slurm/LATEST/lib:"
+
+        source /com/extra/java/8/load.sh
+        source /com/extra/GATK/3.8/load.sh
+
+        java                                                                            \
+            -Xmx32g                                                                     \
+            -jar /com/extra/GATK/LATEST/jar-bin/GenomeAnalysisTK.jar                    \
             -T ApplyRecalibration       \
             -R {ref}                    \
             -input {call}               \
@@ -59,7 +73,7 @@ def apply_recalibration(ref, call, recal, tranch, out, gatk_exe):
             -recalFile {recal}          \
             -tranchesFile {tranch}      \
             -o {out}.recalibrated.vcf   \
-            -nt 64
+            -nt 16
     '''
 
     return inputs, outputs, options, spec
