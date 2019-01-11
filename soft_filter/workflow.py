@@ -106,7 +106,7 @@ def main(workflow):
     resource_set = config['resource_set']
     reference = config['reference']
     chromosomes = config['chromosomes'].split(',')
-    gatk_exe = config['gatk_exe']
+    gatk_exe = None     # config['gatk_exe']
 
     out_dir = f'{project_dir}/data_soft_filter'
     os.makedirs(out_dir, mode=0o775, exist_ok=True)
