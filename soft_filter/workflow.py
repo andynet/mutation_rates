@@ -144,5 +144,5 @@ def main(workflow):
         gwf.target_from_template(name, template)
 
 
-gwf = Workflow()
+gwf = Workflow(defaults = {'account': 'MutationRates'})
 main(gwf)
